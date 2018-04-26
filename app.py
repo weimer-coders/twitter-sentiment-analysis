@@ -1,89 +1,18 @@
 import csv
-import numpy as np
 from empath import Empath
-from sklearn import tree
+# import matplotlib.pyplot as plt
+import numpy as np
+from sklearn import linear_model
+from sklearn.metrics import mean_squared_error, r2_score
+from json import loads, dumps
+from operator import itemgetter
 
 
 WEIGHTS = {
-    'retweets': 5,
-    'comments': 2.5,
-    'favorites': 1
+    'retweets': .05,
+    'comments': .025,
+    'favorites': .01
 }
-
-CATEGORIES = [
-    'help',
-    'violence',
-    'money',
-    'valuable',
-    'hate',
-    'cheerfulness',
-    'aggression',
-    'envy',
-    'anticipation',
-    'crime',
-    'attractive',
-    'masculine',
-    'health',
-    'dispute',
-    'nervousness',
-    'government',
-    'weakness',
-    'horror',
-    'swearing_terms',
-    'leisure',
-    'suffering',
-    'wealthy',
-    'art',
-    'fear',
-    'irritability',
-    'business',
-    'exasperation',
-    'religion',
-    'hipster',
-    'surprise',
-    'worship',
-    'confusion',
-    'death',
-    'healing',
-    'celebration',
-    'ridicule',
-    'neglect',
-    'exotic',
-    'order',
-    'sympathy',
-    'deception',
-    'fight',
-    'politeness',
-    'war',
-    'disgust',
-    'gain',
-    'injury',
-    'rage',
-    'optimism',
-    'sadness',
-    'fun',
-    'emotional',
-    'joy',
-    'anger',
-    'politics',
-    'strength',
-    'technology',
-    'power',
-    'terrorism',
-    'poor',
-    'pain',
-    'beauty',
-    'timidity',
-    'philosophy',
-    'negative_emotion',
-    'competing',
-    'law',
-    'achievement',
-    'disappointment',
-    'feminine',
-    'contentment',
-    'positive_emotion'
-]
 
 
 def interpret(filename):
@@ -95,7 +24,7 @@ def interpret(filename):
     # scoring and sentiment analysis
     scores, features, feature_names = analyze(tweets)
 
-    test_idx = [100, 200, 300]
+    test_idx = list(range(0, len(scores), 5))
 
     # training data
     train_score = np.delete(scores, test_idx)
@@ -109,38 +38,82 @@ def interpret(filename):
         test_features.append(features[pk])
 
     # machine learning stuff
-    clf = tree.DecisionTreeClassifier()
-    clf.fit(train_features, train_score)
+    regr = linear_model.BayesianRidge()
+    regr.fit(train_features, train_score)
 
     # testing machine learning stuff
-    print(test_score)
-    predictions = clf.predict(test_features)
-    print(predictions)
-    accuracies = []
-    for idx, val in enumerate(test_score):
-        accuracies.append(float(predictions[idx]) - float(val))
-    print(accuracies)
+    print(test_score[53])
+    print(test_score[41])
+    print(test_score[250])
+    print(test_score[500])
+    predictions = regr.predict(test_features)
+    print('-----')
+    print(predictions[53])
+    print(predictions[41])
+    print(predictions[250])
+    print(predictions[500])
+
+    # The mean squared error
+    print("Mean squared error: %.2f"
+          % mean_squared_error(test_score, predictions))
+    # Explained variance score: 1 is perfect prediction
+    print('Variance score: %.2f' % r2_score(test_score, predictions))
+    # The coefficients
+    coefs = []
+    print('Coefficients: \n')
+    for idx, val in enumerate(regr.coef_):
+        output = {}
+        output['name'] = feature_names[idx]
+
+        if val > 0:
+            output['pos/neg'] = '+'
+        else:
+            output['pos/neg'] = '-'
+
+        output['value'] = abs(val)
+        coefs.append(output)
+    sorted_coefs = sorted(coefs, key=itemgetter('value'))
+
+    print(sorted_coefs)
 
 
 def analyze(tweets):
-    lexicon = Empath()
+    scored_tweets = []
     scores = []
     feature_names = []
     features = []
 
+    # Calculate score based on retweets and favorites
     for tweet in tweets:
-        score = tweet['favorite_count'] * WEIGHTS['favorites']
-        score = score + tweet['retweet_count'] * WEIGHTS['retweets']
-        scores.append(score)
+        score = float(tweet['favorite_count']) * WEIGHTS['favorites']
+        score = score + float(tweet['retweet_count']) * WEIGHTS['retweets']
+        tweet['score'] = score
+        scored_tweets.append(loads(dumps(tweet)))
 
-        sentiments = lexicon.analyze(tweet['text'], categories=CATEGORIES, normalize=True)
+    # Sort by score and remove the top and bottom 300 to remove outliers
+    scored_tweets = sorted(scored_tweets, key=itemgetter('score'))
+    scored_tweets = scored_tweets[300:-300]
 
+    # Creature x(features) and y(scores) lists for ML
+    for tweet in scored_tweets:
+        # Remove unnesecary properties
+        tweet.pop('id')
+        tweet.pop('created_at')
+        tweet.pop('text')
+        tweet.pop('favorite_count')
+        tweet.pop('retweet_count')
+
+        # Add to score list
+        scores.append(tweet.pop('score'))
+
+        # Create list of sentiment categoreis
         if len(feature_names) == 0:
-            feature_names = list(sentiments.keys())
+            feature_names = list(tweet.keys())
 
+        # Create list of features
         feature = []
-        for k, v in sentiments.items():
-            feature.append(v)
+        for k, v in tweet.items():
+            feature.append(float(v))
         features.append(feature)
 
     return scores, features, feature_names
@@ -155,5 +128,11 @@ def save(data, filename):
         f.close()
 
 
+def sortDictList(arr, sort_key):
+    output = [(dict_[sort_key], dict_) for dict_ in arr]
+    output.sort()
+    return [dict_ for (key, dict_) in output]
+
+
 if __name__ == '__main__':
-    interpret('nytimes_tweets.csv')
+    interpret('nytimes_liwc_filtered.csv')
