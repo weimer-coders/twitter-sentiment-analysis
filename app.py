@@ -5,15 +5,8 @@ from sklearn.metrics import mean_squared_error, r2_score
 from json import loads, dumps
 from operator import itemgetter
 import pickle
-<<<<<<< HEAD
 from categories import sent_categories
 from insensitive_dict_reader import InsensitiveDictReader
-=======
-=======
-from categories import sent_categories
-from insensitive_dict_reader import InsensitiveDictReader
->>>>>>> b3080ea94b87905e2421ab04014826d325fca5c4
->>>>>>> 8e0d48cc3378658595589137dde2573f57e2fd56
 
 
 WEIGHTS = {
@@ -49,7 +42,6 @@ def interpret(filename):
     regr = linear_model.BayesianRidge()
     regr.fit(train_features, train_score)
 
-<<<<<<< HEAD
     # model = {
     #     'regr': regr,
     #     'feature_names': feature_names
@@ -61,57 +53,18 @@ def interpret(filename):
     #
     # loaded_model = pickle.load(open(filename, 'rb'))
     # result = loaded_model['regr'].predict(test_features)
-=======
-    model = {
-        'regr': regr,
-        'feature_names' : feature_names
-    }
-
-    #pickle regr
-    filename = 'finalized_model.sav'
-    pickle.dump(model, open(filename, 'wb'))
-
-    loaded_model = pickle.load(open(filename, 'rb'))
-    result = loaded_model['regr'].predict(test_features)
-
-    #pickle feature_names
-
-
-    # print(result)
-
-    # testing machine learning stuff
-    # print(test_score[53])
-    # print(test_score[41])
-    # print(test_score[250])
-    # print(test_score[500])
-    predictions = regr.predict(test_features)
-    # print('-----')
-<<<<<<< HEAD
-    # print(result[53])
-=======
-    # print(predictions[53])
->>>>>>> b3080ea94b87905e2421ab04014826d325fca5c4
     # print(predictions[41])
     # print(predictions[250])
     # print(predictions[500])
->>>>>>> 8e0d48cc3378658595589137dde2573f57e2fd56
 
     # The mean squared error
     # print("Mean squared error: %.2f"
     #       % mean_squared_error(test_score, predictions))
-<<<<<<< HEAD
     # # Explained variance score: 1 is perfect prediction
     # print('Variance score: %.2f' % r2_score(test_score, predictions))
 
     # The coefficients
     coefs = []
-=======
-    # Explained variance score: 1 is perfect prediction
-    # print('Variance score: %.2f' % r2_score(test_score, predictions))
-    # The coefficients
-    coefs = []
-    # print('Coefficients: \n')
->>>>>>> 8e0d48cc3378658595589137dde2573f57e2fd56
     for idx, val in enumerate(regr.coef_):
         output = {}
         output['name'] = feature_names[idx]
@@ -139,17 +92,8 @@ def interpret(filename):
         print(item["name"])
     print("------")
     print("For more information on what this means, go to: https://repositories.lib.utexas.edu/bitstream/handle/2152/31333/LIWC2015_LanguageManual.pdf")
-<<<<<<< HEAD
 
     return regr, feature_names
-=======
-=======
-
-    # print(sorted_coefs)
-
-    return regr, feature_names
->>>>>>> b3080ea94b87905e2421ab04014826d325fca5c4
->>>>>>> 8e0d48cc3378658595589137dde2573f57e2fd56
 
 
 def analyze(tweets):
@@ -165,11 +109,7 @@ def analyze(tweets):
         score = float(tweet['favorite_count']) * WEIGHTS['favorites']
         score = score + float(tweet['retweet_count']) * WEIGHTS['retweets']
         tweet_data['score'] = score
-<<<<<<< HEAD
         # Filter out unnecessary data
-=======
-        # Filter out unnecessary Data
->>>>>>> 8e0d48cc3378658595589137dde2573f57e2fd56
         for cat in sent_categories:
             tweet_data[cat] = tweet[cat]
 
@@ -181,10 +121,6 @@ def analyze(tweets):
 
     # Creature x(features) and y(scores) lists for ML
     for tweet in scored_tweets:
-<<<<<<< HEAD
-=======
-
->>>>>>> 8e0d48cc3378658595589137dde2573f57e2fd56
         # Add scores to score list
         scores.append(tweet.pop('score'))
 
@@ -225,44 +161,9 @@ def get_best(filename, modelname):
     predictions = list(model.predict(all_features))
     best_prediction = predictions.index(max(predictions))
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-def sortDictList(arr, sort_key, reverse=False):
-    output = [(dict_[sort_key], dict_) for dict_ in arr]
-    output.sort(reverse=reverse)
-    return [dict_ for (key, dict_) in output]
-=======
-def get_best(filename, modelname):
-    model, features_list = interpret('data/train/analyzed/' + modelname)
-
-    with open('data/test/analyzed/' + filename, 'r') as f:
-        reader = InsensitiveDictReader(f)
-        tweets = [row for row in reader]
-        f.close()
-
-    all_texts = []
-    all_features = []
-    for tweet in tweets:
-        all_texts.append(tweet['text'])
-
-        features = []
-        for feature_name in features_list:
-            features.append(float(tweet[feature_name]))
-        all_features.append(features)
-
-    predictions = list(model.predict(all_features))
-    best_prediction = predictions.index(max(predictions))
-
->>>>>>> 8e0d48cc3378658595589137dde2573f57e2fd56
     return tweets[best_prediction]['text']
->>>>>>> b3080ea94b87905e2421ab04014826d325fca5c4
 
 
 if __name__ == '__main__':
-<<<<<<< HEAD
     best_tweet = get_best('test.csv', 'nytimes.csv')
-=======
-    best_tweet = get_best('test.csv', 'nytimes_liwc_filtered.csv')
->>>>>>> 8e0d48cc3378658595589137dde2573f57e2fd56
     print('----------\n' + best_tweet)
