@@ -6,6 +6,7 @@ from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
 from json import loads, dumps
 from operator import itemgetter
+import pickle
 
 
 WEIGHTS = {
@@ -41,17 +42,34 @@ def interpret(filename):
     regr = linear_model.BayesianRidge()
     regr.fit(train_features, train_score)
 
+    model = {
+        'regr': regr,
+        'feature_names' : feature_names
+    }
+
+    #pickle regr
+    filename = 'finalized_model.sav'
+    pickle.dump(model, open(filename, 'wb'))
+
+    loaded_model = pickle.load(open(filename, 'rb'))
+    result = loaded_model['regr'].predict(test_features)
+
+    #pickle feature_names
+
+
+    # print(result)
+
     # testing machine learning stuff
-    print(test_score[53])
-    print(test_score[41])
-    print(test_score[250])
-    print(test_score[500])
+    # print(test_score[53])
+    # print(test_score[41])
+    # print(test_score[250])
+    # print(test_score[500])
     predictions = regr.predict(test_features)
-    print('-----')
-    print(predictions[53])
-    print(predictions[41])
-    print(predictions[250])
-    print(predictions[500])
+    # print('-----')
+    # print(result[53])
+    # print(predictions[41])
+    # print(predictions[250])
+    # print(predictions[500])
 
     # The mean squared error
     print("Mean squared error: %.2f"
@@ -70,11 +88,24 @@ def interpret(filename):
         else:
             output['pos/neg'] = '-'
 
-        output['value'] = abs(val)
+        output['value'] = val
         coefs.append(output)
     sorted_coefs = sorted(coefs, key=itemgetter('value'))
-
-    print(sorted_coefs)
+    # #print(sorted_coefs)
+    top5 = sorted(sorted_coefs[-5:], key=itemgetter('value'), reverse=True)
+    # # print(top5)
+    # print("------")
+    bottom5 = sorted_coefs[:5]
+    # print(bottom5)
+    print("Here are categories to use:")
+    for item in top5:
+        print(item["name"])
+    print("------")
+    print("Here are categories to avoid:")
+    for item in bottom5:
+        print(item["name"])
+    print("------")
+    print("For more information on what this means, go to: https://repositories.lib.utexas.edu/bitstream/handle/2152/31333/LIWC2015_LanguageManual.pdf")
 
 
 def analyze(tweets):
@@ -118,6 +149,8 @@ def analyze(tweets):
 
     return scores, features, feature_names
 
+# def report(scores,features):
+#     print(sorted_coefs)
 
 def save(data, filename):
     keys = data[0].keys()
@@ -128,9 +161,9 @@ def save(data, filename):
         f.close()
 
 
-def sortDictList(arr, sort_key):
+def sortDictList(arr, sort_key, reverse=False):
     output = [(dict_[sort_key], dict_) for dict_ in arr]
-    output.sort()
+    output.sort(reverse=reverse)
     return [dict_ for (key, dict_) in output]
 
 
