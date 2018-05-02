@@ -10,7 +10,6 @@ from insensitive_dict_reader import InsensitiveDictReader
 
 WEIGHTS = {
     'retweets': .05,
-    'comments': .025,
     'favorites': .01
 }
 
