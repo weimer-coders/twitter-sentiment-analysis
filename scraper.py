@@ -5,6 +5,7 @@ import tweepy
 from time import sleep
 import os
 import csv
+import sys
 import credentials
 
 consumer_key = credentials.consumer_key
@@ -53,7 +54,7 @@ def get_all_tweets(screen_name):
     outtweets = [[tweet.id_str, tweet.created_at, tweet.favorite_count, tweet.retweet_count, tweet.full_text.encode("utf-8")] for tweet in alltweets]
 
     # write the csv
-    with open('%s_tweets.csv' % screen_name, 'w') as f:
+    with open('data/train/scraped/%s.csv' % screen_name, 'w') as f:
         writer = csv.writer(f)
         writer.writerow(["id", "created_at", "favorite_count", "retweet_count", "text"])
         writer.writerows(outtweets)
@@ -63,4 +64,4 @@ def get_all_tweets(screen_name):
 
 if __name__ == '__main__':
     # pass in the username of the account you want to download
-    get_all_tweets("nytimes")
+    get_all_tweets(sys.argv[1])
