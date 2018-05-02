@@ -6,7 +6,10 @@ from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
 from json import loads, dumps
 from operator import itemgetter
+<<<<<<< HEAD
 import pickle
+=======
+>>>>>>> b3080ea94b87905e2421ab04014826d325fca5c4
 
 
 WEIGHTS = {
@@ -66,7 +69,10 @@ def interpret(filename):
     # print(test_score[500])
     predictions = regr.predict(test_features)
     # print('-----')
+<<<<<<< HEAD
     # print(result[53])
+=======
+>>>>>>> b3080ea94b87905e2421ab04014826d325fca5c4
     # print(predictions[41])
     # print(predictions[250])
     # print(predictions[500])
@@ -91,6 +97,7 @@ def interpret(filename):
         output['value'] = val
         coefs.append(output)
     sorted_coefs = sorted(coefs, key=itemgetter('value'))
+<<<<<<< HEAD
     # #print(sorted_coefs)
     top5 = sorted(sorted_coefs[-5:], key=itemgetter('value'), reverse=True)
     # # print(top5)
@@ -106,6 +113,8 @@ def interpret(filename):
         print(item["name"])
     print("------")
     print("For more information on what this means, go to: https://repositories.lib.utexas.edu/bitstream/handle/2152/31333/LIWC2015_LanguageManual.pdf")
+=======
+>>>>>>> b3080ea94b87905e2421ab04014826d325fca5c4
 
 
 def analyze(tweets):
@@ -161,10 +170,13 @@ def save(data, filename):
         f.close()
 
 
+<<<<<<< HEAD
 def sortDictList(arr, sort_key, reverse=False):
     output = [(dict_[sort_key], dict_) for dict_ in arr]
     output.sort(reverse=reverse)
     return [dict_ for (key, dict_) in output]
+=======
+    return tweets[best_prediction]['text']
 
 
 if __name__ == '__main__':
