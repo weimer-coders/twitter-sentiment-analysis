@@ -4,7 +4,7 @@ import pickle
 from sklearn import linear_model
 from json import loads, dumps
 from operator import itemgetter
-from categories import sent_categories
+from categories import sent_categories, cat_info
 from insensitive_dict_reader import InsensitiveDictReader
 
 
@@ -46,17 +46,7 @@ def interpret(filename):
 
     # Print out report
     sorted_coefs = sorted(coefs, key=itemgetter('value'))
-    top5 = sorted(sorted_coefs[-5:], key=itemgetter('value'), reverse=True)
-    bottom5 = sorted_coefs[:5]
-    print("Here are categories to use:")
-    for item in top5:
-        print(item["name"])
-    print("------")
-    print("Here are categories to avoid:")
-    for item in bottom5:
-        print(item["name"])
-    print("------")
-    print("For more information on what this means, go to: https://repositories.lib.utexas.edu/bitstream/handle/2152/31333/LIWC2015_LanguageManual.pdf")
+    report(sorted_coefs, len(scores))
 
     # Save regr model
     model = {
@@ -109,6 +99,37 @@ def analyze(tweets):
         features.append(feature)
 
     return scores, features, feature_names
+
+
+def report(coefs, num_tweets):
+    top5 = sorted(coefs[-5:], key=itemgetter('value'), reverse=True)
+    bottom5 = coefs[:5]
+
+    print("Your %s tweets have been analyzed and modeled based on %s lexical categories." % (
+        num_tweets,
+        len(sent_categories)
+    ))
+
+    print("These are the top five categories of words you should use:")
+    for item in top5:
+        cat = cat_info[item["name"]]
+        output = '– ' + cat['name']
+        if len(cat['eg']) > 0:
+            output += ' (e.g. %s)' % cat['eg']
+        print(output)
+    print("________")
+
+    print("These are the ones to avoid:")
+    for item in bottom5:
+        cat = cat_info[item["name"]]
+        output = '– ' + cat['name']
+        if len(cat['eg']) > 0:
+            output += ' (e.g. %s)' % cat['eg']
+        print(output)
+    print("________")
+
+    more_link = "https://repositories.lib.utexas.edu/bitstream/handle/2152/31333/LIWC2015_LanguageManual.pdf"
+    print("For more information on what this means, go to: %s" % more_link)
 
 
 if __name__ == '__main__':
