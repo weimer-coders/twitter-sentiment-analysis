@@ -1,9 +1,5 @@
 # adapted from https://gist.github.com/gabrielsoule/638201ac0cc12828d3cde69035a25336
-# twitter documentation: https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/tweet-object
-
 import tweepy
-from time import sleep
-import os
 import csv
 import sys
 import credentials
