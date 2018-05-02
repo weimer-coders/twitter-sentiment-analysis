@@ -1,6 +1,4 @@
 import csv
-from empath import Empath
-# import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
@@ -9,6 +7,8 @@ from operator import itemgetter
 <<<<<<< HEAD
 import pickle
 =======
+from categories import sent_categories
+from insensitive_dict_reader import InsensitiveDictReader
 >>>>>>> b3080ea94b87905e2421ab04014826d325fca5c4
 
 
@@ -72,19 +72,20 @@ def interpret(filename):
 <<<<<<< HEAD
     # print(result[53])
 =======
+    # print(predictions[53])
 >>>>>>> b3080ea94b87905e2421ab04014826d325fca5c4
     # print(predictions[41])
     # print(predictions[250])
     # print(predictions[500])
 
     # The mean squared error
-    print("Mean squared error: %.2f"
-          % mean_squared_error(test_score, predictions))
+    # print("Mean squared error: %.2f"
+    #       % mean_squared_error(test_score, predictions))
     # Explained variance score: 1 is perfect prediction
-    print('Variance score: %.2f' % r2_score(test_score, predictions))
+    # print('Variance score: %.2f' % r2_score(test_score, predictions))
     # The coefficients
     coefs = []
-    print('Coefficients: \n')
+    # print('Coefficients: \n')
     for idx, val in enumerate(regr.coef_):
         output = {}
         output['name'] = feature_names[idx]
@@ -114,6 +115,10 @@ def interpret(filename):
     print("------")
     print("For more information on what this means, go to: https://repositories.lib.utexas.edu/bitstream/handle/2152/31333/LIWC2015_LanguageManual.pdf")
 =======
+
+    # print(sorted_coefs)
+
+    return regr, feature_names
 >>>>>>> b3080ea94b87905e2421ab04014826d325fca5c4
 
 
@@ -125,10 +130,16 @@ def analyze(tweets):
 
     # Calculate score based on retweets and favorites
     for tweet in tweets:
+        tweet_data = {}
+
         score = float(tweet['favorite_count']) * WEIGHTS['favorites']
         score = score + float(tweet['retweet_count']) * WEIGHTS['retweets']
-        tweet['score'] = score
-        scored_tweets.append(loads(dumps(tweet)))
+        tweet_data['score'] = score
+        # Filter out unnecessary Data
+        for cat in sent_categories:
+            tweet_data[cat] = tweet[cat]
+
+        scored_tweets.append(loads(dumps(tweet_data)))
 
     # Sort by score and remove the top and bottom 300 to remove outliers
     scored_tweets = sorted(scored_tweets, key=itemgetter('score'))
@@ -136,17 +147,11 @@ def analyze(tweets):
 
     # Creature x(features) and y(scores) lists for ML
     for tweet in scored_tweets:
-        # Remove unnesecary properties
-        tweet.pop('id')
-        tweet.pop('created_at')
-        tweet.pop('text')
-        tweet.pop('favorite_count')
-        tweet.pop('retweet_count')
 
-        # Add to score list
+        # Add scores to score list
         scores.append(tweet.pop('score'))
 
-        # Create list of sentiment categoreis
+        # Create list of sentiment category names
         if len(feature_names) == 0:
             feature_names = list(tweet.keys())
 
@@ -176,8 +181,31 @@ def sortDictList(arr, sort_key, reverse=False):
     output.sort(reverse=reverse)
     return [dict_ for (key, dict_) in output]
 =======
+def get_best(filename, modelname):
+    model, features_list = interpret('data/train/analyzed/' + modelname)
+
+    with open('data/test/analyzed/' + filename, 'r') as f:
+        reader = InsensitiveDictReader(f)
+        tweets = [row for row in reader]
+        f.close()
+
+    all_texts = []
+    all_features = []
+    for tweet in tweets:
+        all_texts.append(tweet['text'])
+
+        features = []
+        for feature_name in features_list:
+            features.append(float(tweet[feature_name]))
+        all_features.append(features)
+
+    predictions = list(model.predict(all_features))
+    best_prediction = predictions.index(max(predictions))
+
     return tweets[best_prediction]['text']
+>>>>>>> b3080ea94b87905e2421ab04014826d325fca5c4
 
 
 if __name__ == '__main__':
-    interpret('nytimes_liwc_filtered.csv')
+    best_tweet = get_best('test.csv', 'nytimes_liwc_filtered.csv')
+    print('----------\n' + best_tweet)

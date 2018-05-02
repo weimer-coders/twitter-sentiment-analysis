@@ -10,7 +10,7 @@ Thumbs.db
 # Python
 *.pyc
 .coverage
-.env
+env
 django.log
 django.log*
 *.egg-*
