@@ -1,10 +1,11 @@
 import csv
 import sys
+import pickle
 from sklearn import linear_model
 from json import loads, dumps
 from operator import itemgetter
-import pickle
 from categories import sent_categories
+from insensitive_dict_reader import InsensitiveDictReader
 
 
 WEIGHTS = {
@@ -18,7 +19,7 @@ MARGIN_SIZE = .1
 
 def interpret(filename):
     with open('data/train/analyzed/%s.csv' % filename, 'r') as f:
-        reader = csv.DictReader(f)
+        reader = InsensitiveDictReader(f)
         tweets = [row for row in reader]
         f.close()
 
@@ -62,8 +63,8 @@ def interpret(filename):
         'regr': regr,
         'features': feature_names
     }
-    filename = 'models/' + 'nytimes.sav'
-    pickle.dump(model, open(filename, 'wb'))
+    modelname = 'models/%s.sav' % filename
+    pickle.dump(model, open(modelname, 'wb'))
 
     return regr, feature_names
 
