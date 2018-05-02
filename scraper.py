@@ -51,7 +51,10 @@ def get_all_tweets(screen_name):
 
     # transform the tweepy tweets into a 2D array that will populate the csv
     # this is where I tried to include tweet.reply_count and tweet.quote_count but it didn't work
-    outtweets = [[tweet.id_str, tweet.created_at, tweet.favorite_count, tweet.retweet_count, tweet.full_text.encode("utf-8")] for tweet in alltweets]
+    outtweets = [
+        [tweet.id_str, tweet.created_at, tweet.favorite_count, tweet.retweet_count, tweet.full_text.encode("utf-8")]
+        for tweet in alltweets
+    ]
 
     # write the csv
     with open('data/train/scraped/%s.csv' % screen_name, 'w') as f:
