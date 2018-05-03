@@ -23,5 +23,3 @@ celery.log
 
 # Custom
 credentials.py
-*.csv
-*.sav
